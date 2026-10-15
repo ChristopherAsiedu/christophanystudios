@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { services } from "@/data/content";
-import { databaseConfigured, saveEnquiry } from "@/lib/db";
+import { databaseConfigured, listBookedDates, saveEnquiry } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -81,6 +81,17 @@ export async function POST(request: NextRequest) {
   for (const value of [name, email, phone, service, location, sessionType, details]) {
     if (/[\r\n]/.test(value) && [email, phone].includes(value)) {
       return NextResponse.json({ error: "Please check the format of your contact details." }, { status: 400 });
+    }
+  }
+
+  if (databaseConfigured()) {
+    try {
+      const booked = new Set(await listBookedDates());
+      if (booked.has(preferredDate) || booked.has(alternativeDate)) {
+        return NextResponse.json({ error: "That date has already been booked. Please choose another date." }, { status: 409 });
+      }
+    } catch (error) {
+      console.error("Could not check booked dates:", error);
     }
   }
 

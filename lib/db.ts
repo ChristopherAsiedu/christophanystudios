@@ -115,3 +115,12 @@ export async function updateEnquiryStatus(id: number, status: EnquiryStatus): Pr
   await ready_();
   await getPool().execute("UPDATE enquiries SET status = ? WHERE id = ?", [status, id]);
 }
+
+export async function listBookedDates(): Promise<string[]> {
+  if (!databaseConfigured()) return [];
+  await ready_();
+  const [rows] = await getPool().query(
+    "SELECT DISTINCT preferred_date FROM enquiries WHERE status = 'booked' AND preferred_date REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
+  );
+  return (rows as { preferred_date: string }[]).map((row) => row.preferred_date);
+}

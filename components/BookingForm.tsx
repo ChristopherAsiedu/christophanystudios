@@ -2,12 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { services } from "@/data/content";
+import { BookingCalendar } from "@/components/BookingCalendar";
 
 type FormState = "idle" | "sending" | "success" | "error";
 
 export function BookingForm({ initialService = "" }: { initialService?: string }) {
   const [status, setStatus] = useState<FormState>("idle");
   const [message, setMessage] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,6 +28,7 @@ export function BookingForm({ initialService = "" }: { initialService?: string }
       const result = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(result.error || "We could not send your enquiry. Please try again.");
       form.reset();
+      setPreferredDate("");
       setStatus("success");
       setMessage("Thank you. Your enquiry has been sent to the studio. We’ll be in touch to discuss availability.");
     } catch (error) {
@@ -70,7 +73,7 @@ export function BookingForm({ initialService = "" }: { initialService?: string }
             </select>
           </label>
           <label>Type of session or event <input name="sessionType" placeholder="e.g. family portraits, launch event" maxLength={120} /></label>
-          <label>Preferred date <input name="preferredDate" type="date" /></label>
+          <div className="form-full calendar-field"><span className="calendar-label">Preferred date</span><BookingCalendar name="preferredDate" value={preferredDate} onChange={setPreferredDate} /></div>
           <label>Alternative date <input name="alternativeDate" type="date" /></label>
           <label>Preferred location <input name="location" placeholder="Accra, or let us know" maxLength={120} /></label>
           <label>Budget range <span className="optional">(optional)</span>
